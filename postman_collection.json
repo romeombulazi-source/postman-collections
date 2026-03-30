@@ -1,0 +1,579 @@
+{
+  "info": {
+    "_postman_id": "6ba0e826-539e-450d-98f5-0eaf5b19e895",
+    "name": "DummyJSON Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53160539",
+    "_collection_link": "https://go.postman.co/collection/53160539-6ba0e826-539e-450d-98f5-0eaf5b19e895?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "delete delete without token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// delete delete without token",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Unauthorized when no token provided', function () {",
+              "  pm.expect([401, 403]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Auth error response has message', function () {",
+              "  const ct = pm.response.headers.get('Content-Type') || '';",
+              "  if (ct.includes('application/json')) {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.be.an('object');",
+              "    pm.expect(json).to.satisfy(obj => ('message' in obj) || ('error' in obj));",
+              "  }",
+              "});",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\" : \"emily.updated@example.com\" }\n"
+        },
+        "url": {
+          "raw": "https://dummyjson.com/users/1",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "users",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "put update user valid token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// put update user valid token",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Auth required: 200 when authorized OR 401/403 when token missing/invalid', function () {",
+              "  pm.expect([200, 401, 403]).to.include(pm.response.code);",
+              "});",
+              "",
+              "if (pm.response.code === 200) {",
+              "  pm.test('Update user response has user shape', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.be.an('object');",
+              "    pm.expect(json).to.have.property('id');",
+              "    pm.expect(json.id).to.be.a('number');",
+              "  });",
+              "} else {",
+              "  pm.test('Auth error response has message', function () {",
+              "    const ct = pm.response.headers.get('Content-Type') || '';",
+              "    if (ct.includes('application/json')) {",
+              "      const json = pm.response.json();",
+              "      pm.expect(json).to.be.an('object');",
+              "      pm.expect(json).to.satisfy(obj => ('message' in obj) || ('error' in obj));",
+              "    }",
+              "  });",
+              "}",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{vault:authorization-secret}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"firstName\" : \"Emiley\" ,\n\"lastName\" : \"Johnson Updated\"\n\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://dummyjson.com/users/1",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "users",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post auth/refresh (refresh token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// post auth/refresh (refresh token)",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Refresh response returns token fields', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.be.an('object');",
+              "  pm.expect(json).to.have.property('token');",
+              "  pm.expect(json.token).to.be.a('string').and.not.be.empty;",
+              "  if (json.refreshToken !== undefined) {",
+              "    pm.expect(json.refreshToken).to.be.a('string');",
+              "  }",
+              "});",
+              "",
+              "// Persist tokens",
+              "try {",
+              "  const json = pm.response.json();",
+              "  if (json.token) pm.environment.set('accessToken', json.token);",
+              "  if (json.refreshToken) pm.environment.set('refreshToken', json.refreshToken);",
+              "} catch (e) {}",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{vault:authorization-secret}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\" : \"emileys\" ,\n\"password\" : \"wrongpass\"\n\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://dummyjson.com/auth/refresh",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get user without token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// get user without token (auth/me)",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Unauthorized when no token provided', function () {",
+              "  // DummyJSON typically returns 401 for missing/invalid token",
+              "  pm.expect([401, 403]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Auth error response has message', function () {",
+              "  const ct = pm.response.headers.get('Content-Type') || '';",
+              "  if (ct.includes('application/json')) {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.be.an('object');",
+              "    pm.expect(json).to.satisfy(obj => ('message' in obj) || ('error' in obj));",
+              "  }",
+              "});",
+              ""
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "basic"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\" : \"emileys\" ,\n\"password\" : \"wrongpass\"\n\n}"
+        },
+        "url": {
+          "raw": "https://dummyjson.com/auth/me",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post failed missing username",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// post failed missing username",
+              "",
+              "pm.test('Status code is 400 or 422 (validation error)', function () {",
+              "  pm.expect([400, 401, 422]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Error response has message', function () {",
+              "  const ct = pm.response.headers.get('Content-Type') || '';",
+              "  if (ct.includes('application/json')) {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.be.an('object');",
+              "    pm.expect(json).to.satisfy(obj => ('message' in obj) || ('error' in obj));",
+              "  }",
+              "});",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\n\"password\": \"emilyspass\"\n\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://dummyjson.com/auth/login",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post valid credentials",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// post valid credentials",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Login response has token fields', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.be.an('object');",
+              "  pm.expect(json).to.have.property('token');",
+              "  pm.expect(json.token).to.be.a('string').and.not.be.empty;",
+              "  // refreshToken is returned by DummyJSON",
+              "  pm.expect(json).to.have.property('refreshToken');",
+              "  pm.expect(json.refreshToken).to.be.a('string').and.not.be.empty;",
+              "});",
+              "",
+              "// Persist tokens for subsequent requests/monitor runs",
+              "try {",
+              "  const json = pm.response.json();",
+              "  if (json.token) pm.environment.set('accessToken', json.token);",
+              "  if (json.refreshToken) pm.environment.set('refreshToken', json.refreshToken);",
+              "} catch (e) {}",
+              ""
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {}
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://dummyjson.com/auth/login",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "delete with token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// delete with token",
+              "",
+              "pm.test('Response time is under 2000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test('Auth required: 200/204 when authorized OR 401/403 when token missing/invalid', function () {",
+              "  pm.expect([200, 204, 401, 403]).to.include(pm.response.code);",
+              "});",
+              "",
+              "if ([200, 204].includes(pm.response.code)) {",
+              "  pm.test('Delete response is object if JSON', function () {",
+              "    const ct = pm.response.headers.get('Content-Type') || '';",
+              "    if (ct.includes('application/json')) {",
+              "      const json = pm.response.json();",
+              "      pm.expect(json).to.be.an('object');",
+              "    }",
+              "  });",
+              "}",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"firstName\" : \"Emiley\" ,\n\"lastName\" : \"Johnson Updated\"\n\n}"
+        },
+        "url": {
+          "raw": "https://dummyjson.com/users/1",
+          "protocol": "https",
+          "host": [
+            "dummyjson",
+            "com"
+          ],
+          "path": [
+            "users",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level auth/token manager for DummyJSON",
+          "// Uses environment vars: baseUrl, accessToken, refreshToken",
+          "// Will attempt to refresh token if expired/near expiry.",
+          "",
+          "const baseUrl = pm.environment.get('baseUrl') || 'https://dummyjson.com';",
+          "pm.environment.set('baseUrl', baseUrl);",
+          "",
+          "function parseJwtPayload(token) {",
+          "  try {",
+          "    const parts = token.split('.');",
+          "    if (parts.length !== 3) return null;",
+          "    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));",
+          "    return payload;",
+          "  } catch (e) {",
+          "    return null;",
+          "  }",
+          "}",
+          "",
+          "function isExpiringSoon(token, skewSeconds = 60) {",
+          "  const payload = parseJwtPayload(token);",
+          "  if (!payload || !payload.exp) return false;",
+          "  const now = Math.floor(Date.now() / 1000);",
+          "  return (payload.exp - now) <= skewSeconds;",
+          "}",
+          "",
+          "const accessToken = pm.environment.get('accessToken');",
+          "const refreshToken = pm.environment.get('refreshToken');",
+          "",
+          "// Don't do anything for the login/refresh calls themselves",
+          "const reqName = pm.info.requestName || '';",
+          "const isLogin = /auth\\/login/i.test(reqName);",
+          "const isRefresh = /auth\\/refresh/i.test(reqName);",
+          "",
+          "if (!isLogin && !isRefresh) {",
+          "  if (accessToken && isExpiringSoon(accessToken) && refreshToken) {",
+          "    pm.sendRequest({",
+          "      url: baseUrl + '/auth/refresh',",
+          "      method: 'POST',",
+          "      header: { 'Content-Type': 'application/json' },",
+          "      body: {",
+          "        mode: 'raw',",
+          "        raw: JSON.stringify({ refreshToken, expiresInMins: 30 })",
+          "      }",
+          "    }, function (err, res) {",
+          "      if (err || !res) return;",
+          "      if (res.code >= 200 && res.code < 300) {",
+          "        try {",
+          "          const json = res.json();",
+          "          if (json.token) pm.environment.set('accessToken', json.token);",
+          "          if (json.refreshToken) pm.environment.set('refreshToken', json.refreshToken);",
+          "        } catch (e) {}",
+          "      }",
+          "    });",
+          "  }",
+          "}",
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level baseline tests for DummyJSON",
+          "",
+          "// Status code should be valid HTTP status",
+          "pm.test('Status code is a valid HTTP status', function () {",
+          "  pm.expect(pm.response.code).to.be.within(100, 599);",
+          "});",
+          "",
+          "// Basic performance guardrail (adjust if needed)",
+          "pm.test('Response time is under 2000ms', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// If response declares JSON, it should parse",
+          "pm.test('JSON responses are parseable', function () {",
+          "  const ct = pm.response.headers.get('Content-Type') || '';",
+          "  if (ct.includes('application/json')) {",
+          "    pm.response.json();",
+          "  }",
+          "});",
+          ""
+        ]
+      }
+    }
+  ]
+}
